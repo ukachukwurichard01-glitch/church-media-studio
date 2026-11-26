@@ -1,0 +1,41 @@
+name: Build Church Media Studio for macOS
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        # If this project does not have package-lock.json, replace npm ci with npm install.
+
+      - name: Build React application
+        run: npm run build
+
+      - name: Build universal macOS DMG
+        run: npx electron-builder --mac dmg --universal --publish never
+
+      - name: Upload macOS installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Church-Media-Studio-macOS-DMG
+          path: release/*.dmg
+          if-no-files-found: error
+          retention-days: 30

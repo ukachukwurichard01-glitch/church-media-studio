@@ -1,0 +1,9 @@
+node_modules/
+dist/
+release/
+native/build/
+.vscode/
+.env
+.env.*
+!.env.example
+.netlify/

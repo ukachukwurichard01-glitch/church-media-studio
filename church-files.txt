@@ -1,0 +1,348 @@
+===== APP.JSX =====
+import React, { useState } from "react";
+
+const menu = [
+  ["Dashboard", "¦"],
+  ["Bible", "?"],
+  ["Hymns", "?"],
+  ["Songs", "?"],
+  ["Presentations", "?"],
+  ["Media Library", "?"],
+  ["Announcements", "?"],
+  ["Countdown", "?"],
+  ["NDI & OBS", "?"],
+  ["Settings", "?"]
+];
+
+export default function App() {
+  const [active, setActive] = useState("Dashboard");
+  const [verse, setVerse] = useState("For God so loved the world, that he gave his only begotten Son...");
+  const [reference, setReference] = useState("John 3:16");
+  const [liveText, setLiveText] = useState("Welcome to Church");
+  const [isLive, setIsLive] = useState(false);
+
+  const showLive = () => {
+    setLiveText(active === "Bible" ? verse : liveText);
+    setIsLive(true);
+  };
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-icon">?</div>
+          <div>
+            <strong>CHURCH MEDIA</strong>
+            <span>STUDIO PROFESSIONAL</span>
+          </div>
+        </div>
+
+        <div className="workspace-label">WORKSPACE</div>
+        <nav>
+          {menu.map(([name, icon]) => (
+            <button
+              key={name}
+              className={`nav-item ${active === name ? "selected" : ""}`}
+              onClick={() => setActive(name)}
+            >
+              <span className="nav-icon">{icon}</span>
+              {name}
+              {name === "NDI & OBS" && <span className="nav-tag">PRO</span>}
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <div className="status-dot"></div>
+          <span>LOCAL STUDIO</span>
+          <small>Offline-ready workspace</small>
+        </div>
+      </aside>
+
+      <main className="main">
+        <header className="topbar">
+          <div>
+            <div className="eyebrow">CHURCH BROADCASTING WORKSPACE</div>
+            <h1>{active}</h1>
+          </div>
+          <div className="top-actions">
+            <span className="system-status"><i></i> System ready</span>
+            <div className="avatar">CM</div>
+          </div>
+        </header>
+
+        {active === "Dashboard" ? (
+          <>
+            <section className="welcome">
+              <div>
+                <div className="eyebrow gold">YOUR CHURCH. YOUR MESSAGE. YOUR STUDIO.</div>
+                <h2>Everything you need<br />to present with excellence.</h2>
+                <p>Manage scripture, worship, media and live presentation from one professional workspace.</p>
+                <button className="primary-btn" onClick={() => setActive("Presentations")}>Open presentation studio ?</button>
+              </div>
+              <div className="welcome-art">
+                <div className="art-ring"></div>
+                <div className="art-cross">?</div>
+                <span>WORSHIP · WORD · MEDIA</span>
+              </div>
+            </section>
+
+            <div className="section-heading">
+              <div><h3>Studio workspace</h3><p>Choose a tool to get started</p></div>
+              <span className="small-label">10 MODULES</span>
+            </div>
+
+            <section className="module-grid">
+              {[
+                ["?", "Bible", "Search scripture and prepare Bible slides"],
+                ["?", "Hymns", "Manage hymns, lyrics and verses"],
+                ["?", "Presentations", "Build and control service slides"],
+                ["?", "Media Library", "Organise images, video and audio"],
+                ["?", "Announcements", "Display church notices and events"],
+                ["?", "NDI & OBS", "Configure broadcast output"]
+              ].map(([icon, name, desc]) => (
+                <button className="module-card" key={name} onClick={() => setActive(name)}>
+                  <span className="module-icon">{icon}</span>
+                  <strong>{name}</strong>
+                  <p>{desc}</p>
+                  <span className="card-arrow">?</span>
+                </button>
+              ))}
+            </section>
+          </>
+        ) : active === "Bible" ? (
+          <section className="content-panel">
+            <div className="panel-heading">
+              <div><h2>Bible workspace</h2><p>Prepare scripture for your congregation.</p></div>
+              <span className="small-label">SAMPLE VERSE</span>
+            </div>
+            <div className="bible-controls">
+              <label>Book / reference<input value={reference} onChange={e => setReference(e.target.value)} /></label>
+              <label>Translation<select><option>KJV – King James Version</option><option>Sample content only</option></select></label>
+            </div>
+            <label className="verse-label">Scripture text</label>
+            <textarea className="verse-input" value={verse} onChange={e => setVerse(e.target.value)} />
+            <div className="button-row">
+              <button className="primary-btn" onClick={showLive}>Send to live</button>
+              <button className="secondary-btn" onClick={() => setIsLive(false)}>Clear live screen</button>
+            </div>
+            <p className="notice">This is a starter demonstration with sample scripture text, not a complete Bible database. We will add properly licensed Bible translations and search next.</p>
+          </section>
+        ) : (
+          <section className="content-panel">
+            <div className="panel-heading">
+              <div><h2>{active}</h2><p>Church Media Studio module</p></div>
+              <span className="small-label">WORKSPACE</span>
+            </div>
+            <div className="coming-soon">
+              <div className="coming-icon">?</div>
+              <h2>{active} workspace</h2>
+              <p>This module is part of the project build. Its working features will be added in the next development stages.</p>
+              <button className="secondary-btn" onClick={() => setActive("Dashboard")}>Return to dashboard</button>
+            </div>
+          </section>
+        )}
+
+        <section className="output-area">
+          <div className="output-header">
+            <div><h3>Presentation output</h3><p>Preview and live programme monitor</p></div>
+            <span className={`live-indicator ${isLive ? "on" : ""}`}>{isLive ? "? LIVE" : "? STANDBY"}</span>
+          </div>
+          <div className="screen-grid">
+            <div>
+              <div className="screen-label">PREVIEW</div>
+              <div className="monitor"><span>{active === "Bible" ? verse : "Your next slide will appear here"}</span><small>{active === "Bible" ? reference : "CHURCH MEDIA STUDIO"}</small></div>
+            </div>
+            <div>
+              <div className="screen-label">PROGRAM / LIVE</div>
+              <div className="monitor program"><span>{isLive ? liveText : "No live slide"}</span><small>{isLive ? "ON AIR" : "WAITING FOR OUTPUT"}</small></div>
+            </div>
+          </div>
+        </section>
+
+        <footer>CHURCH MEDIA STUDIO <span>•</span> PROFESSIONAL EDITION <span>•</span> VERSION 1.0.0</footer>
+      </main>
+    </div>
+  );
+}
+
+===== STYLE.CSS =====
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  font-family: "DM Sans", Arial, sans-serif;
+  color: #f2f3f7;
+  background: #080a10;
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 1100px; min-height: 100vh; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+.app { display: flex; min-height: 100vh; background: #080a10; }
+.sidebar { width: 245px; flex-shrink: 0; background: #0d1018; border-right: 1px solid #202431; padding: 27px 16px 18px; display: flex; flex-direction: column; }
+.brand { display: flex; gap: 12px; align-items: center; padding: 0 8px 30px; }
+.brand-icon { width: 39px; height: 39px; display: grid; place-items: center; color: #e6c36d; border: 1px solid #8f7135; border-radius: 12px; font-size: 23px; }
+.brand strong { display: block; font: 800 13px Manrope; letter-spacing: 1.1px; }
+.brand span { display: block; color: #a28a56; font-size: 9px; letter-spacing: 2px; margin-top: 4px; }
+.workspace-label, .eyebrow, .screen-label { color: #70798b; font-size: 10px; font-weight: 700; letter-spacing: 1.6px; }
+.workspace-label { padding: 0 10px 12px; }
+nav { display: grid; gap: 5px; }
+.nav-item { display: flex; align-items: center; gap: 12px; border: 0; color: #aab0bd; background: transparent; border-radius: 8px; padding: 12px 11px; text-align: left; font-size: 13px; }
+.nav-item:hover, .nav-item.selected { background: #1a1e29; color: #f4d58c; }
+.nav-item.selected { box-shadow: inset 3px 0 #d7b565; }
+.nav-icon { width: 20px; text-align: center; font-size: 17px; }
+.nav-tag { margin-left: auto; font-size: 9px; color: #d8bd7b; border: 1px solid #635334; padding: 2px 5px; border-radius: 4px; }
+.sidebar-bottom { margin-top: auto; border-top: 1px solid #252a36; padding: 18px 8px 0; color: #aab0bd; font-size: 11px; }
+.sidebar-bottom small { display: block; color: #656d7b; margin: 8px 0 0 15px; }
+.status-dot, .system-status i { display: inline-block; width: 7px; height: 7px; background: #55c995; border-radius: 50%; margin-right: 7px; }
+.main { flex: 1; min-width: 0; padding: 27px 34px 18px; max-width: 1700px; margin: 0 auto; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.topbar h1 { font: 700 25px Manrope; margin: 5px 0 0; }
+.top-actions { display: flex; gap: 20px; align-items: center; }
+.system-status { color: #a8b2c1; font-size: 11px; }
+.avatar { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: #272b36; color: #e6c36d; font-size: 11px; }
+.welcome { min-height: 245px; border: 1px solid #34303a; border-radius: 15px; padding: 30px 35px; display: flex; justify-content: space-between; align-items: center; overflow: hidden; background: radial-gradient(ellipse at 80% 50%, #3b3020 0, #191720 35%, #11141e 76%); }
+.gold { color: #d9bb74; }
+.welcome h2 { font: 800 30px/1.25 Manrope; margin: 13px 0 9px; }
+.welcome p { max-width: 500px; color: #aeb3bf; font-size: 13px; line-height: 1.7; }
+.primary-btn { border: 0; border-radius: 7px; padding: 11px 16px; background: #d6b66d; color: #17130b; font-weight: 800; font-size: 12px; margin-top: 10px; }
+.primary-btn:hover { background: #f0d58f; }
+.welcome-art { width: 245px; height: 190px; display: grid; place-items: center; position: relative; color: #e4c67d; }
+.art-ring { position: absolute; width: 165px; height: 165px; border: 1px solid #9c7940; border-radius: 50%; box-shadow: 0 0 45px #b58c3c33, inset 0 0 35px #b58c3c22; }
+.art-cross { font-size: 92px; font-family: Georgia; text-shadow: 0 0 30px #d7b66c66; }
+.welcome-art span { position: absolute; bottom: 0; font-size: 8px; letter-spacing: 2px; color: #bca16b; }
+.section-heading, .panel-heading, .output-header { display: flex; justify-content: space-between; align-items: center; }
+.section-heading { margin: 28px 0 13px; }
+h3 { font: 700 16px Manrope; margin: 0; }
+.section-heading p, .panel-heading p, .output-header p { color: #788191; font-size: 11px; margin: 5px 0 0; }
+.small-label { color: #a58b54; font-size: 9px; letter-spacing: 1.4px; }
+.module-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.module-card { text-align: left; position: relative; min-height: 125px; padding: 17px; border: 1px solid #272d3a; border-radius: 10px; background: #11151f; color: #f0f1f5; }
+.module-card:hover { border-color: #a98b50; background: #171b26; }
+.module-icon { display: block; color: #dfc17c; font-size: 22px; margin-bottom: 10px; }
+.module-card strong { font: 700 13px Manrope; }
+.module-card p { color: #8c95a4; font-size: 10px; margin: 6px 0 0; }
+.card-arrow { position: absolute; right: 15px; top: 15px; color: #7b8492; }
+.content-panel { border: 1px solid #282e3a; background: #11151f; border-radius: 12px; padding: 25px; min-height: 330px; }
+.panel-heading { margin-bottom: 25px; }
+.panel-heading h2 { font: 700 20px Manrope; margin: 0; }
+.bible-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.bible-controls label, .verse-label { display: grid; gap: 8px; color: #aeb5c2; font-size: 11px; }
+input, select, .verse-input { color: #f0f1f5; background: #0b0e16; border: 1px solid #303746; border-radius: 7px; padding: 11px; outline: none; }
+input:focus, textarea:focus { border-color: #b39455; }
+.verse-label { margin-top: 18px; }
+.verse-input { width: 100%; min-height: 95px; resize: vertical; margin-top: 8px; line-height: 1.6; }
+.button-row { display: flex; gap: 10px; margin-top: 12px; }
+.secondary-btn { border: 1px solid #454b58; background: #1b202b; color: #d4d8e0; padding: 10px 14px; border-radius: 7px; font-size: 11px; margin-top: 10px; }
+.notice { color: #8b94a4; font-size: 10px; line-height: 1.6; margin-top: 18px; }
+.coming-soon { text-align: center; max-width: 440px; margin: 30px auto; }
+.coming-icon { font-size: 34px; color: #d8b76d; }
+.coming-soon h2 { font: 700 20px Manrope; }
+.coming-soon p { color: #929baa; font-size: 12px; line-height: 1.7; }
+.output-area { border: 1px solid #282e3a; border-radius: 12px; padding: 19px; margin-top: 23px; background: #0e121b; }
+.live-indicator { color: #8c95a4; font-size: 10px; letter-spacing: 1px; }
+.live-indicator.on { color: #ff6565; }
+.screen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 16px; }
+.screen-label { margin-bottom: 7px; font-size: 9px; }
+.monitor { height: 105px; background: #050609; border: 1px solid #242a35; border-radius: 7px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 12px; gap: 8px; }
+.monitor span { font: 600 13px Manrope; color: #e9e9ed; }
+.monitor small { color: #9e895a; font-size: 9px; }
+.monitor.program { border-color: #57433a; }
+footer { color: #596273; font-size: 8px; letter-spacing: 1.3px; text-align: center; padding: 20px 0 0; }
+footer span { color: #b49556; margin: 0 7px; }
+
+===== MAIN.JSX =====
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App.jsx";
+import "./style.css";
+
+createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+===== ELECTRON MAIN =====
+const { app, BrowserWindow } = require("electron");
+const path = require("path");
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1500,
+    height: 950,
+    minWidth: 1100,
+    minHeight: 700,
+    backgroundColor: "#080a10",
+    title: "Church Media Studio",
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.cjs"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+
+  if (process.env.NODE_ENV === "development" || !app.isPackaged) {
+    win.loadURL("http://127.0.0.1:5173");
+  } else {
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
+  }
+}
+
+app.whenReady().then(() => {
+  createWindow();
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});
+
+===== PACKAGE =====
+{
+  "name": "church-media-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Professional Church Media and Presentation Studio",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron .\"",
+    "build": "vite build",
+    "dist": "npm run build && electron-builder",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "*",
+    "concurrently": "*",
+    "electron": "*",
+    "electron-builder": "*",
+    "vite": "*",
+    "wait-on": "*"
+  },
+  "build": {
+    "appId": "com.churchmediastudio.app",
+    "productName": "Church Media Studio",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
+

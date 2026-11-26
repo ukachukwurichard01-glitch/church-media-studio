@@ -1,0 +1,39 @@
+CHURCH MEDIA STUDIO - NDI OUTPUT UPDATE
+
+WHAT THIS ADDS
+- Native NDI 6 sender named CHURCH MEDIA STUDIO
+- NDI & OBS control page with Start/Stop buttons and status
+- Sends the Program text/status as a 960x540 BGRA video stream at about 10 fps
+- Electron IPC bridge with context isolation retained
+
+IMPORTANT
+This is an initial video-only NDI output. It does not yet transmit program audio,
+video files, camera inputs, or full-screen presentation composition. It has not
+been compiled or tested on your PC yet. Compile and test it before relying on it
+for a live church service.
+
+INSTALL
+1. Close Church Media Studio and stop any running Vite terminal with Ctrl+C.
+2. Extract this ZIP.
+3. Copy the included files/folders into your existing project folder:
+   C:\Users\Gewitter PC\Desktop\CHURCH-MEDIA-STUDIO
+   Allow replacement of electron/main.cjs, electron/preload.cjs, src/App.jsx,
+   src/style.css and package.json.
+4. The NDI Runtime you previously installed supplies the NDI runtime DLL.
+   Keep it installed. The app will use the system runtime when launching the sender.
+5. Open the Visual Studio 2026 Developer Command Prompt.
+6. Change to the project folder:
+   cd /d "C:\Users\Gewitter PC\Desktop\CHURCH-MEDIA-STUDIO"
+7. Build the native sender:
+   npm.cmd run build:ndi
+8. Start the app:
+   npm.cmd run dev
+9. Open NDI & OBS, click Start NDI Sender, then in OBS add an NDI Source and
+   select CHURCH MEDIA STUDIO.
+
+BUILD INSTALLER
+After successful local testing, run:
+   npm.cmd run dist
+
+If Windows Firewall asks, allow Church Media Studio on your Private network.
+Keep OBS and Church Media Studio on the same local network.
