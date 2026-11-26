@@ -86,6 +86,9 @@
           "path": "/Applications"
         }
       ]
+    },
+    "directories": {
+      "output": "release"
     }
   },
   "author": "Ukachukwu, James Godswill and Emeka Godson",
