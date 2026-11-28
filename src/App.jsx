@@ -1,12 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const MENU = [
-  ["Dashboard", "D"], ["Bible", "B"], ["Hymns", "H"], ["Songs", "S"],
-  ["Presentations", "P"], ["Service Planner", "SP"],
-  ["Templates & 3D", "3D"], ["Lower Thirds", "LT"],
-  ["Media Library", "M"], ["Announcements", "A"], ["Countdown", "T"],
-  ["Stage Views", "SV"], ["Recording Studio", "REC"],
-  ["NDI & OBS", "NDI"], ["Updates", "UP"], ["Settings", "SET"]
+const MENU_GROUPS = [
+  { label: "WORKSPACE", items: [["Dashboard", "DB"], ["Bible", "BI"], ["Hymns", "HY"], ["Songs", "SO"], ["Presentations", "PR"], ["Service Planner", "SP"]] },
+  { label: "PRODUCTION", items: [["Templates & 3D", "3D"], ["Lower Thirds", "LT"], ["Media Library", "ML"], ["Announcements", "AN"], ["Countdown", "CD"], ["Stage Views", "SV"]] },
+  { label: "BROADCAST & SYSTEM", items: [["Recording Studio", "REC"], ["NDI & OBS", "NDI"], ["Updates", "UP"], ["Settings", "SET"]] }
 ];
 
 const BOOKS = [
@@ -937,8 +934,7 @@ export default function App() {
     <div className={`app ui-${settings.fontSize}`}>
       <aside className="sidebar">
         <div className="brand"><div className="brand-icon">✦</div><div><strong>CHURCH MEDIA</strong><span>STUDIO PROFESSIONAL</span></div></div>
-        <div className="workspace-label">WORKSPACE</div>
-        <nav>{MENU.map(([name, icon]) => <button key={name} className={`nav-item ${active === name ? "selected" : ""}`} onClick={() => setActive(name)}><span className="nav-icon">{icon}</span>{name}{name === "NDI & OBS" && <span className="nav-tag">NDI</span>}</button>)}</nav>
+        <div className="sidebar-navigation">{MENU_GROUPS.map(group => <section className="nav-group" key={group.label}><div className="workspace-label">{group.label}</div><nav>{group.items.map(([name, icon]) => <button key={name} className={`nav-item ${active === name ? "selected" : ""}`} onClick={() => setActive(name)}><span className="nav-icon">{icon}</span>{name}{name === "NDI & OBS" && <span className="nav-tag">NDI</span>}</button>)}</nav></section>)}</div>
         <div className="sidebar-bottom"><div className="status-dot"></div><span>LOCAL STUDIO</span><small>Offline-ready workspace</small></div>
       </aside>
 
