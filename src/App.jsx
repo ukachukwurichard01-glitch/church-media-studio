@@ -390,9 +390,14 @@ export default function App() {
       video.pause();
       video.removeAttribute("src");
       video.load();
-      URL.revokeObjectURL(preacherVideoUrl);
     };
   }, [preacherVideoUrl, chromaKeyEnabled, chromaThreshold]);
+
+  useEffect(() => {
+    return () => {
+      if (preacherVideoUrl) URL.revokeObjectURL(preacherVideoUrl);
+    };
+  }, [preacherVideoUrl]);
 
   useEffect(() => {
     if (!ndiRunning) return;
