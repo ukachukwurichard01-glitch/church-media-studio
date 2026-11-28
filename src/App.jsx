@@ -405,6 +405,7 @@ export default function App() {
     if (!canvas || !window.churchStudio?.sendNdiFrame) return;
     const ctx = canvas.getContext("2d", { alpha: false });
     const W = canvas.width, H = canvas.height;
+    const transitionStartedAt = performance.now();
     const draw = async () => {
       if (ndiFrameInFlightRef.current) return;
       const bg = backgroundImageRef.current;
@@ -457,6 +458,23 @@ export default function App() {
       ctx.ellipse(0, 0, 290, 78, 0.38, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
+
+      const progress = Math.max(0, Math.min(1, (performance.now() - transitionStartedAt) / Math.max(100, animationDuration)));
+      const eased = 1 - Math.pow(1 - progress, 3);
+      ctx.save();
+      if (animationStyle === "flip-3d") {
+        ctx.translate(W / 2, H / 2);
+        ctx.scale(Math.max(0.06, Math.abs(Math.cos(eased * Math.PI / 2))), 1);
+        ctx.translate(-W / 2, -H / 2);
+      } else if (animationStyle === "zoom-depth" || animationStyle === "cinematic-3d") {
+        const scale = animationStyle === "zoom-depth" ? 0.68 + 0.32 * eased : 0.88 + 0.12 * eased;
+        ctx.translate(W / 2, H / 2);
+        ctx.scale(scale, scale);
+        ctx.translate(-W / 2, -H / 2);
+      } else if (animationStyle === "gold-sweep") {
+        ctx.translate((1 - eased) * -95, 0);
+      }
+      ctx.globalAlpha = animationStyle === "soft-fade" ? eased : Math.min(1, eased * 1.7);
 
       ctx.textAlign = "center";
       ctx.fillStyle = "#d8b76e";
@@ -520,6 +538,7 @@ export default function App() {
         ctx.fillText(String(ltDetail), 92, barY + 55, W - 190);
         ctx.textAlign = "center";
       }
+      ctx.restore();
       ctx.fillStyle = "rgba(255,255,255,0.72)";
       ctx.font = "10px Arial";
       ctx.fillText(CREATOR_CREDIT, W / 2, H - 16);
@@ -540,7 +559,7 @@ export default function App() {
     draw();
     const timer = setInterval(draw, 33);
     return () => clearInterval(timer);
-  }, [ndiRunning, liveSlide, isLive, settings.fontFamily, settings.scriptureFontSize, settings.backgroundId, lowerThirdEnabled, lowerThirdMode, lowerThirdName, lowerThirdTitle, lowerThirdStyle, preacherVideoUrl, chromaKeyEnabled, chromaThreshold]);
+  }, [ndiRunning, liveSlide, isLive, settings.fontFamily, settings.scriptureFontSize, settings.backgroundId, lowerThirdEnabled, lowerThirdMode, lowerThirdName, lowerThirdTitle, lowerThirdStyle, preacherVideoUrl, chromaKeyEnabled, chromaThreshold, transitionToken, animationStyle, animationDuration]);
 
   useEffect(() => {
     localStorage.setItem("cms-settings-v1", JSON.stringify(settings));
