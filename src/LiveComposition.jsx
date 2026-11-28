@@ -78,8 +78,8 @@ export default function LiveComposition({ onVideoReady, onVideoStopped, onLayout
     <div className="panel-heading"><div><h2>OBS Live Camera & Composition</h2><p>OBS controls the physical camera. Church Media Studio receives OBS Virtual Camera and composes the preacher with scripture.</p></div><span className="small-label">LIVE VIDEO INPUT</span></div>
     <div className="obs-workflow">
       <div className="settings-section"><h3>OBS camera workflow</h3><ol className="ndi-steps">
-        <li>In OBS, add your physical camera as a <strong>Video Capture Device</strong>.</li>
-        <li>Apply OBS's <strong>Chroma Key</strong> filter to remove the green background, or leave it green for the studio keyer.</li>
+        <li>In OBS, create a dedicated scene and add your physical camera as a <strong>Video Capture Device</strong>. Keep only the camera in this scene.</li>
+        <li>Keep the green backdrop visible in this dedicated camera scene. Church Media Studio will remove the green and place the preacher.</li>
         <li>In OBS, click <strong>Start Virtual Camera</strong>.</li>
         <li>Select <strong>OBS Virtual Camera</strong> below, then start the input.</li>
         <li>Choose a preacher/Bible layout and send the preacher composition live. Church Media Studio sends the finished picture to OBS as NDI.</li>
