@@ -68,7 +68,7 @@ export default function ServicePlanner({ onSendLive }) {
         <div className="slide-actions">
           <button className="secondary-btn" disabled={index===0} onClick={()=>move(index,-1)}>↑</button>
           <button className="secondary-btn" disabled={index===plan.items.length-1} onClick={()=>move(index,1)}>↓</button>
-          <button className="primary-btn" onClick={()=>onSendLive?.(item.title, item.type.toUpperCase()+" · "+plan.title, item.type==="Bible"?"Bible":item.type==="Hymn"?"Song":item.type==="Preacher"?"Preacher":"Presentation")}>Prepare live</button>
+          <button className="primary-btn" onClick={()=>onSendLive?.(item.title, item.type.toUpperCase()+" · "+plan.title, item.type==="Bible"?"Bible":item.type==="Hymn"?"Song":item.type==="Preacher"?"Preacher Video":"Presentation")}>Prepare live</button>
           <button className="text-danger" onClick={()=>remove(item.id)}>Remove</button>
         </div>
       </article>)}
