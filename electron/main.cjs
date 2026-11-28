@@ -3,6 +3,19 @@ const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
 
+// Keep Chromium's disk cache in a dedicated, writable Windows user cache folder.
+// This avoids permission/locking problems in the default Electron cache location.
+const localCacheRoot = process.env.LOCALAPPDATA || app.getPath("temp");
+const chromiumCachePath = path.join(localCacheRoot, "ChurchMediaStudio", "Cache");
+try {
+  fs.mkdirSync(chromiumCachePath, { recursive: true });
+  app.setPath("cache", chromiumCachePath);
+  app.commandLine.appendSwitch("disk-cache-dir", chromiumCachePath);
+  app.commandLine.appendSwitch("disable-gpu-shader-disk-cache");
+} catch (error) {
+  console.warn("Could not configure the dedicated Chromium cache folder:", error);
+}
+
 let ndiProcess = null;
 let ndiReady = false;
 let ndiStartPromise = null;
