@@ -370,6 +370,23 @@ export default function App() {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, W, H);
       }
+      // Animated gold orbit rings are rendered into the same frame sent to OBS.
+      const motionTime = performance.now() / 1000;
+      ctx.save();
+      ctx.translate(W / 2, H / 2);
+      ctx.rotate(motionTime * 0.34);
+      ctx.strokeStyle = "rgba(216,183,110,0.20)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 360, 105, -0.24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.rotate(-motionTime * 0.82);
+      ctx.strokeStyle = "rgba(255,226,157,0.12)";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 290, 78, 0.38, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
       ctx.textAlign = "center";
       ctx.fillStyle = "#d8b76e";
       ctx.font = `600 20px "${settings.fontFamily || "Georgia"}"`;
@@ -412,6 +429,26 @@ export default function App() {
       ctx.fillStyle = "#a99770";
       ctx.font = `12px "${settings.fontFamily || "Georgia"}"`;
       ctx.fillText(isLive ? "LIVE PROGRAM" : "STANDBY", W / 2, H - 42);
+      if (isLive && lowerThirdEnabled) {
+        const ltName = lowerThirdMode === "automatic" ? (liveSlide.reference || "LIVE") : lowerThirdName;
+        const ltDetail = lowerThirdMode === "automatic" ? String(liveSlide.text || "").replace(/\s+/g, " ").slice(0, 110) : lowerThirdTitle;
+        const barY = H - 132;
+        const bar = ctx.createLinearGradient(70, barY, W - 70, barY);
+        bar.addColorStop(0, "rgba(5,7,12,0.94)");
+        bar.addColorStop(0.78, "rgba(5,7,12,0.70)");
+        bar.addColorStop(1, "rgba(5,7,12,0.08)");
+        ctx.fillStyle = bar;
+        ctx.fillRect(70, barY, W - 140, 74);
+        ctx.fillStyle = lowerThirdStyle === "white" ? "#ffffff" : lowerThirdStyle === "blue" ? "#4ba5e8" : "#d8b76e";
+        ctx.fillRect(70, barY, 5, 74);
+        ctx.textAlign = "left";
+        ctx.font = "700 20px Manrope";
+        ctx.fillText(String(ltName).slice(0, 70), 92, barY + 31, W - 190);
+        ctx.fillStyle = "#e5d5b3";
+        ctx.font = "14px Manrope";
+        ctx.fillText(String(ltDetail), 92, barY + 55, W - 190);
+        ctx.textAlign = "center";
+      }
       ctx.fillStyle = "rgba(255,255,255,0.72)";
       ctx.font = "10px Arial";
       ctx.fillText(CREATOR_CREDIT, W / 2, H - 16);
@@ -430,9 +467,9 @@ export default function App() {
       await pending;
     };
     draw();
-    const timer = setInterval(draw, 100);
+    const timer = setInterval(draw, 33);
     return () => clearInterval(timer);
-  }, [ndiRunning, liveSlide, isLive, settings.fontFamily, settings.scriptureFontSize, settings.backgroundId]);
+  }, [ndiRunning, liveSlide, isLive, settings.fontFamily, settings.scriptureFontSize, settings.backgroundId, lowerThirdEnabled, lowerThirdMode, lowerThirdName, lowerThirdTitle, lowerThirdStyle]);
 
   useEffect(() => {
     localStorage.setItem("cms-settings-v1", JSON.stringify(settings));
@@ -754,6 +791,14 @@ export default function App() {
     const display = String(countdownMinutes).padStart(2, "0") + ":" + String(countdownSeconds).padStart(2, "0");
     sendLive(display, "SERVICE COUNTDOWN", "Countdown");
   }
+
+  useEffect(() => {
+    if (!isLive || liveSlide.kind !== "Countdown") return;
+    const display = String(countdownMinutes).padStart(2, "0") + ":" + String(countdownSeconds).padStart(2, "0");
+    if (liveSlide.text !== display || liveSlide.reference !== "SERVICE COUNTDOWN") {
+      setLiveSlide(previous => ({ ...previous, text: display, reference: "SERVICE COUNTDOWN" }));
+    }
+  }, [countdownMinutes, countdownSeconds, isLive, liveSlide.kind, liveSlide.text, liveSlide.reference]);
 
   const activeVerseRef = `${book} ${chapter}:${selectedVerse}`;
   const currentStanza = selectedSong?.verses?.[stanza] || "";
