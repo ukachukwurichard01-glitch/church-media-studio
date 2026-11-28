@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 const MENU = [
-  ["Dashboard", "⌂"], ["Bible", "▤"], ["Hymns", "♫"], ["Songs", "♪"],
-  ["Presentations", "▣"], ["Media Library", "▧"], ["Announcements", "◷"],
-  ["Countdown", "◴"], ["NDI & OBS", "◎"], ["Updates", "↻"], ["Settings", "⚙"]
+  ["Dashboard", "D"], ["Bible", "B"], ["Hymns", "H"], ["Songs", "S"],
+  ["Presentations", "P"], ["Service Planner", "SP"],
+  ["Templates & 3D", "3D"], ["Lower Thirds", "LT"],
+  ["Media Library", "M"], ["Announcements", "A"], ["Countdown", "T"],
+  ["Stage Views", "SV"], ["Recording Studio", "REC"],
+  ["NDI & OBS", "NDI"], ["Updates", "UP"], ["Settings", "SET"]
 ];
 
 const BOOKS = [
@@ -49,7 +52,7 @@ const FONT_CHOICES = [
   ["Impact", "Impact (Bold display)"],
 ];
 
-const CREATOR_CREDIT = "Made by Ukachukwu, James Godswill and Emeka Godson";
+const CREATOR_CREDIT = "MADE BY UKACHUKWU RICHARD AND JAMES GODSWILL";
 
 
 const STARTER_HYMNS = [
@@ -221,6 +224,14 @@ export default function App() {
   const [editingAnnouncementId, setEditingAnnouncementId] = useState("");
   const [liveSlide, setLiveSlide] = useState({ text: "Welcome to Church", reference: "CHURCH MEDIA STUDIO", kind: "Welcome" });
   const [isLive, setIsLive] = useState(false);
+  const [transitionToken, setTransitionToken] = useState(0);
+  const [lowerThirdEnabled, setLowerThirdEnabled] = useState(true);
+  const [lowerThirdMode, setLowerThirdMode] = useState("automatic");
+  const [lowerThirdName, setLowerThirdName] = useState("CHURCH MEDIA STUDIO");
+  const [lowerThirdTitle, setLowerThirdTitle] = useState("LIVE WORSHIP SERVICE");
+  const [lowerThirdStyle, setLowerThirdStyle] = useState("gold");
+  const [animationStyle, setAnimationStyle] = useState("cinematic-3d");
+  const [animationDuration, setAnimationDuration] = useState(900);
   const [mediaItems, setMediaItems] = useState([]);
   const [mediaError, setMediaError] = useState("");
   const [countdownMinutes, setCountdownMinutes] = useState(5);
@@ -524,6 +535,7 @@ export default function App() {
 
   function sendLive(text, reference, kind, mediaUrl = null) {
     setLiveSlide({ text, reference, kind, mediaUrl });
+    setTransitionToken(value => value + 1);
     setIsLive(true);
   }
 
@@ -927,6 +939,41 @@ export default function App() {
           <p className="notice">Images and muted video clips can be sent to the NDI picture output. Audio is kept in the local media library; this NDI sender currently transmits video frames, not sound.</p>
         </section>}
 
+        {active === "Lower Thirds" && <section className="content-panel production-panel">
+          <div className="panel-heading"><div><h2>Live Lower Thirds</h2><p>Connected graphics for Bible verses, hymns, songs and preacher identification.</p></div><span className="small-label">LIVE GRAPHICS</span></div>
+          <div className="production-grid">
+            <div className="settings-section">
+              <h3>Content source</h3>
+              <label className="setting-row"><span>Automatically follow live content</span><input type="checkbox" checked={lowerThirdMode === "automatic"} onChange={e=>setLowerThirdMode(e.target.checked ? "automatic" : "manual")}/></label>
+              <label>Preacher / speaker name<input value={lowerThirdName} onChange={e=>setLowerThirdName(e.target.value)} placeholder="Enter speaker name"/></label>
+              <label>Role / service title<input value={lowerThirdTitle} onChange={e=>setLowerThirdTitle(e.target.value)} placeholder="Pastor · Sunday service"/></label>
+              <label>Graphic style<select value={lowerThirdStyle} onChange={e=>setLowerThirdStyle(e.target.value)}><option value="gold">Premium gold</option><option value="white">Clean white</option><option value="blue">Broadcast blue</option></select></label>
+              <label className="setting-row"><span>Show lower third on Program</span><input type="checkbox" checked={lowerThirdEnabled} onChange={e=>setLowerThirdEnabled(e.target.checked)}/></label>
+              <div className="button-row"><button className="primary-btn" onClick={()=>sendLive(lowerThirdName,lowerThirdTitle,"Lower Third")}>Send speaker graphic live</button><button className="secondary-btn" onClick={()=>setLowerThirdEnabled(false)}>Hide graphic</button></div>
+            </div>
+            <div className={"lower-third-preview " + lowerThirdStyle}>
+              <div className="lt-preview-screen"><span className="lt-preview-kicker">CHURCH MEDIA STUDIO · LIVE</span><strong>{lowerThirdMode === "automatic" && isLive ? liveSlide.reference : lowerThirdName || "SPEAKER NAME"}</strong><small>{lowerThirdMode === "automatic" && isLive ? liveSlide.text : lowerThirdTitle || "TITLE / SERVICE"}</small></div>
+              <p>Automatic mode follows the live Bible reference, hymn/song title and current live text. Manual mode uses the speaker details above.</p>
+            </div>
+          </div>
+          <div className="notice">Preacher video compositing and chroma-key controls are part of the green-screen integration stage. This panel currently manages live lower-third graphics and content synchronization.</div>
+        </section>}
+
+        {active === "Templates & 3D" && <section className="content-panel production-panel">
+          <div className="panel-heading"><div><h2>Motion Templates & 3D Effects</h2><p>Choose a motion treatment for live scripture, worship lyrics, countdowns and slides.</p></div><span className="small-label">MOTION GRAPHICS</span></div>
+          <div className="template-showcase"><div className="template-orb"><div className="orb-core">✦</div><i></i><b></b></div><div><span className="small-label">LIVE PREVIEW STYLE</span><h3>Premium cinematic 3D</h3><p>Layered depth, perspective rotation, gold light trails and a smooth reveal.</p></div></div>
+          <div className="production-grid">
+            <label>Transition style<select value={animationStyle} onChange={e=>setAnimationStyle(e.target.value)}><option value="cinematic-3d">Cinematic 3D reveal</option><option value="flip-3d">3D page flip</option><option value="zoom-depth">Depth zoom</option><option value="gold-sweep">Gold light sweep</option><option value="soft-fade">Soft fade</option></select></label>
+            <label>Transition duration<select value={animationDuration} onChange={e=>setAnimationDuration(Number(e.target.value))}><option value="500">Fast · 0.5 seconds</option><option value="900">Standard · 0.9 seconds</option><option value="1400">Cinematic · 1.4 seconds</option><option value="2000">Slow · 2 seconds</option></select></label>
+            <div className="settings-section"><h3>Animation coverage</h3><p>Bible · Hymns · Songs · Presentations · Countdown · Announcements · Lower thirds</p><button className="primary-btn" onClick={()=>setTransitionToken(value=>value+1)}>Preview animation</button></div>
+          </div>
+          <div className="notice">Motion effects are applied to the Program monitor. The NDI-rendered output receives the live content frame; animated NDI overlays will be expanded with the video compositor.</div>
+        </section>}
+
+        {active === "Service Planner" && <section className="content-panel production-panel"><div className="panel-heading"><div><h2>Service Planner</h2><p>Plan a service sequence and prepare its content.</p></div><span className="small-label">SERVICE WORKSPACE</span></div><div className="empty-state"><h3>Service planning workspace</h3><p>Use Presentations, Bible, Hymns and Announcements to prepare the current service. A saved run-of-show editor is scheduled for the next service-planner phase.</p></div></section>}
+        {active === "Stage Views" && <section className="content-panel production-panel"><div className="panel-heading"><div><h2>Stage Views</h2><p>Operator-facing information for the platform display.</p></div><span className="small-label">STAGE OUTPUT</span></div><div className="empty-state"><h3>Stage display workspace</h3><p>Stage-specific display routing and presenter notes are scheduled for the stage-output integration phase.</p></div></section>}
+        {active === "Recording Studio" && <section className="content-panel production-panel"><div className="panel-heading"><div><h2>Recording Studio</h2><p>Recording controls and session management.</p></div><span className="small-label">RECORDING</span></div><div className="empty-state"><h3>Recording integration</h3><p>The complete capture and recording engine is not yet present in this source version. Recording controls will be added with the audio/video pipeline.</p></div></section>}
+
         {active === "Countdown" && <section className="content-panel countdown-panel">
           <div className="panel-heading"><div><h2>Service Countdown</h2><p>Prepare a countdown for the start of worship, service or a presentation.</p></div><span className="small-label">LOCAL TIMER</span></div>
           <div className="countdown-stage">
@@ -1008,8 +1055,8 @@ export default function App() {
 
         <canvas ref={ndiCanvasRef} width="960" height="540" className="ndi-hidden-canvas" aria-hidden="true" />
 
-        {settings.showOutput && <section className="output-area"><div className="output-header"><div><h3>Presentation output</h3><p>Local program monitor · NDI network output available</p></div><span className={`live-indicator ${isLive?"on":""}`}>{isLive?"● LIVE":"○ STANDBY"}</span></div><div className="screen-grid"><div><div className="screen-label">PREVIEW</div><div className="monitor" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><span style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`}}>{active==="Bible"?currentText:active==="Hymns"||active==="Songs"?currentStanza:"Your selected slide will appear here"}</span><small>{active==="Bible"?activeVerseRef: (selectedSong?.number ? "Hymn " + selectedSong.number + " · " : "") + (selectedSong?.title || "CHURCH MEDIA STUDIO")}</small></div></div><div><div className="screen-label">PROGRAM / LIVE</div><div className="monitor program" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><span style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`}}>{isLive?liveSlide.text:"No live slide"}</span><small>{isLive?liveSlide.reference:"WAITING FOR OUTPUT"}</small></div></div></div><div className="output-actions"><button className="secondary-btn" onClick={()=>setIsLive(false)}>Clear live screen</button><span>{isLive?liveSlide.kind+" is on the local program monitor":"Ready for presentation"}</span></div></section>}
-      <footer>CHURCH MEDIA STUDIO <span>•</span> PROFESSIONAL EDITION <span>•</span> VERSION 1.3.1 <span>•</span> {CREATOR_CREDIT}</footer>
+        {settings.showOutput && <section className="output-area"><div className="output-header"><div><h3>Presentation output</h3><p>Local program monitor · NDI network output available</p></div><span className={`live-indicator ${isLive?"on":""}`}>{isLive?"● LIVE":"○ STANDBY"}</span></div><div className="screen-grid"><div><div className="screen-label">PREVIEW</div><div className="monitor" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><span style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`}}>{active==="Bible"?currentText:active==="Hymns"||active==="Songs"?currentStanza:"Your selected slide will appear here"}</span><small>{active==="Bible"?activeVerseRef: (selectedSong?.number ? "Hymn " + selectedSong.number + " · " : "") + (selectedSong?.title || "CHURCH MEDIA STUDIO")}</small></div></div><div><div className="screen-label">PROGRAM / LIVE</div><div className="monitor program" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><span key={transitionToken} className={"program-content motion-" + animationStyle} style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`,animationDuration:animationDuration + "ms"}}>{isLive?liveSlide.text:"No live slide"}</span><small>{isLive?liveSlide.reference:"WAITING FOR OUTPUT"}</small>{isLive && lowerThirdEnabled && <div className={"program-lower-third lt-" + lowerThirdStyle}><strong>{lowerThirdMode === "automatic" ? liveSlide.reference : lowerThirdName}</strong><span>{lowerThirdMode === "automatic" ? liveSlide.text : lowerThirdTitle}</span></div>}</div></div></div><div className="output-actions"><button className="secondary-btn" onClick={()=>setIsLive(false)}>Clear live screen</button><span>{isLive?liveSlide.kind+" is on the local program monitor":"Ready for presentation"}</span></div></section>}
+      <footer>CHURCH MEDIA STUDIO <span>•</span> PROFESSIONAL EDITION <span>•</span> VERSION 1.4.0 <span>•</span> {CREATOR_CREDIT}</footer>
       </main>
     </div>
   );
