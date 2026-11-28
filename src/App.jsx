@@ -461,9 +461,9 @@ export default function App() {
       ctx.textAlign = "center";
       ctx.fillStyle = "#d8b76e";
       ctx.font = `600 20px "${settings.fontFamily || "Georgia"}"`;
-      ctx.fillText(liveSlide.reference || "CHURCH MEDIA STUDIO", W / 2, 95);
+      ctx.fillText(isLive && liveSlide.kind !== "Preacher Video" ? (liveSlide.reference || "CHURCH MEDIA STUDIO") : "CHURCH MEDIA STUDIO", W / 2, 95);
       ctx.fillStyle = "#ffffff";
-      const raw = String(isLive ? liveSlide.text : "CHURCH MEDIA STUDIO").replace(/\r\n?/g, "\n").trim();
+      const raw = String(isLive && liveSlide.kind === "Preacher Video" ? "" : (isLive ? liveSlide.text : "CHURCH MEDIA STUDIO")).replace(/\r\n?/g, "\n").trim();
       const paragraphs = raw.split("\n");
       const maxWidth = W - 120;
       const maxHeight = H - 210;
