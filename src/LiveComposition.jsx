@@ -23,8 +23,7 @@ export default function LiveComposition({ onVideoReady, onVideoStopped, onLayout
       const cameras = all.filter(d => d.kind === "videoinput");
       setDevices(cameras);
       const obs = cameras.find(d => /obs virtual camera/i.test(d.label));
-      if (obs) setDeviceId(current => current || obs.deviceId);
-      else if (cameras[0]) setDeviceId(current => current || cameras[0].deviceId);
+      if (obs) setDeviceId(current => obs ? obs.deviceId : (current || cameras[0]?.deviceId || ""));
     } catch (e) { setError("Could not list camera devices: " + (e.message || e)); }
   }, []);
 
