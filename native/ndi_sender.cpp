@@ -49,7 +49,7 @@ int main() {
     frame.xres = WIDTH;
     frame.yres = HEIGHT;
     frame.FourCC = NDIlib_FourCC_type_BGRA;
-    frame.frame_rate_N = 10;
+    frame.frame_rate_N = 30;
     frame.frame_rate_D = 1;
     frame.picture_aspect_ratio =
         static_cast<float>(WIDTH) / HEIGHT;
