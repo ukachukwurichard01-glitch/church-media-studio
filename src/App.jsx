@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import ServicePlanner from "./ServicePlanner.jsx";
 import LiveComposition from "./LiveComposition.jsx";
 import MotionTemplates from "./MotionTemplates.jsx";
+import BibleLanguageSelector from "./BibleLanguageSelector.jsx";
 
 const MENU_GROUPS = [
   { label: "WORKSPACE", items: [["Dashboard", "DB"], ["Bible", "BI"], ["Hymns", "HY"], ["Songs", "SO"], ["Presentations", "PR"], ["Service Planner", "SP"]] },
@@ -194,6 +195,8 @@ export default function App() {
   const [updateBusy, setUpdateBusy] = useState(false);
   const [bible, setBible] = useState(null);
   const [bibleError, setBibleError] = useState("");
+  const [translatedVerses, setTranslatedVerses] = useState(null);
+  const [translationName, setTranslationName] = useState("King James Version (KJV · offline)");
   const [book, setBook] = useState("John");
   const [chapter, setChapter] = useState(3);
   const [selectedVerse, setSelectedVerse] = useState(16);
@@ -670,7 +673,8 @@ export default function App() {
   const bookNames = useMemo(() => bible ? BOOKS.filter(name => bible[name]) : [], [bible]);
   const chapters = bible?.[book] || [];
   const verses = chapters[chapter - 1] || [];
-  const currentText = verses[selectedVerse - 1] || "";
+  const displayedVerses = translatedVerses || verses;
+  const currentText = displayedVerses[selectedVerse - 1] || verses[selectedVerse - 1] || "";
 
   const filteredSongs = useMemo(() => {
     const source = active === "Hymns"
@@ -1029,7 +1033,8 @@ export default function App() {
         </section>}
 
         {active === "Bible" && <section className="content-panel">
-          <div className="panel-heading"><div><h2>King James Version Bible</h2><p>Complete offline Scripture library · 66 books</p></div><span className="small-label">{bible ? "KJV READY" : "LOADING KJV"}</span></div>
+          <div className="panel-heading"><div><h2>Holy Bible · Multiple Languages</h2><p>Offline King James Version plus online Igbo, Hausa and Yoruba translations.</p></div><span className="small-label">{bible ? "KJV READY" : "LOADING KJV"}</span></div>
+          <BibleLanguageSelector book={book} chapter={chapter} onVerses={setTranslatedVerses} onName={setTranslationName} />
           {bibleError && <div className="error-box">{bibleError}</div>}
           {!bible && !bibleError && <div className="loading-box">Loading the offline KJV Bible…</div>}
           {bible && <>
@@ -1039,10 +1044,10 @@ export default function App() {
             <div className="bible-controls">
               <label>Book<select value={book} onChange={e=>changeBook(e.target.value)}>{bookNames.map(n=><option key={n}>{n}</option>)}</select></label>
               <label>Chapter<select value={chapter} onChange={e=>{setChapter(Number(e.target.value));setSelectedVerse(1)}}>{chapters.map((_,i)=><option key={i} value={i+1}>{i+1}</option>)}</select></label>
-              <label>Verse<select value={selectedVerse} onChange={e=>setSelectedVerse(Number(e.target.value))}>{verses.map((_,i)=><option key={i} value={i+1}>{i+1}</option>)}</select></label>
+              <label>Verse<select value={selectedVerse} onChange={e=>setSelectedVerse(Number(e.target.value))}>{displayedVerses.map((_,i)=><option key={i} value={i+1}>{i+1}</option>)}</select></label>
             </div>
-            <div className="scripture-card" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.58),rgba(4,6,11,.68)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><div className="scripture-reference">{activeVerseRef} · KJV</div><div className="scripture-text" style={{fontFamily: settings.fontFamily || "Georgia", fontSize: `${settings.scriptureFontSize || 42}px`}}>{currentText || "Choose a book, chapter and verse."}</div><div className="scripture-actions"><button className="secondary-btn" disabled={selectedVerse<=1} onClick={()=>setSelectedVerse(v=>v-1)}>← Previous verse</button><button className="secondary-btn" disabled={selectedVerse>=verses.length} onClick={()=>setSelectedVerse(v=>v+1)}>Next verse →</button><button className="primary-btn" onClick={()=>sendLive(currentText,activeVerseRef+" · KJV","Bible")}>Send verse to live</button></div></div>
-            <div className="chapter-list"><div className="result-heading">Chapter {chapter} · Select a verse</div>{verses.map((text,i)=><button key={i} className={`verse-row ${selectedVerse===i+1?"chosen":""}`} onClick={()=>setSelectedVerse(i+1)}><b>{i+1}</b><span>{text}</span></button>)}</div>
+            <div className="scripture-card" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.58),rgba(4,6,11,.68)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><div className="scripture-reference">{activeVerseRef} · KJV</div><div className="scripture-text" style={{fontFamily: settings.fontFamily || "Georgia", fontSize: `${settings.scriptureFontSize || 42}px`}}>{currentText || "Choose a book, chapter and verse."}</div><div className="scripture-actions"><button className="secondary-btn" disabled={selectedVerse<=1} onClick={()=>setSelectedVerse(v=>v-1)}>← Previous verse</button><button className="secondary-btn" disabled={selectedVerse>=verses.length} onClick={()=>setSelectedVerse(v=>v+1)}>Next verse →</button><button className="primary-btn" onClick={()=>sendLive(currentText,activeVerseRef+" · "+translationName,"Bible")}>Send verse to live</button></div></div>
+            <div className="chapter-list"><div className="result-heading">Chapter {chapter} · Select a verse</div>{displayedVerses.map((text,i)=><button key={i} className={`verse-row ${selectedVerse===i+1?"chosen":""}`} onClick={()=>setSelectedVerse(i+1)}><b>{i+1}</b><span>{text}</span></button>)}</div>
           </>}
         </section>}
 
@@ -1110,20 +1115,20 @@ export default function App() {
               <label className="setting-row"><span>Automatically follow live content</span><input type="checkbox" checked={lowerThirdMode === "automatic"} onChange={e=>setLowerThirdMode(e.target.checked ? "automatic" : "manual")}/></label>
               <label>Preacher / speaker name<input value={lowerThirdName} onChange={e=>setLowerThirdName(e.target.value)} placeholder="Enter speaker name"/></label>
               <label>Role / service title<input value={lowerThirdTitle} onChange={e=>setLowerThirdTitle(e.target.value)} placeholder="Pastor · Sunday service"/></label>
-              <label>Preacher video (green-screen recording)<input type="file" accept="video/*" onChange={e=>{const file=e.target.files && e.target.files[0];if(file){setPreacherVideoUrl(URL.createObjectURL(file));setPreacherVideoName(file.name);}}}/></label>
+              <p className="hint">Connect the OBS Virtual Camera on the Live Composition page. Recorded-video import is not needed for this workflow.</p>
               <label className="setting-row"><span>Remove green background (chroma key)</span><input type="checkbox" checked={chromaKeyEnabled} onChange={e=>setChromaKeyEnabled(e.target.checked)}/></label>
               <label>Green-screen sensitivity <input type="range" min="20" max="140" value={chromaThreshold} onChange={e=>setChromaThreshold(Number(e.target.value))}/></label>
-              <p className="hint">{preacherVideoName || "Choose a preacher video recorded against a green screen."}</p>
+              <p className="hint">The OBS camera feed is used for the live preacher. The chroma-key control below removes remaining green pixels if needed.</p>
               <label>Graphic style<select value={lowerThirdStyle} onChange={e=>setLowerThirdStyle(e.target.value)}><option value="gold">Premium gold</option><option value="white">Clean white</option><option value="blue">Broadcast blue</option></select></label>
               <label className="setting-row"><span>Show lower third on Program</span><input type="checkbox" checked={lowerThirdEnabled} onChange={e=>setLowerThirdEnabled(e.target.checked)}/></label>
-              <div className="button-row"><button className="primary-btn" onClick={()=>sendLive(lowerThirdName,lowerThirdTitle,"Lower Third")}>Send speaker graphic live</button><button className="secondary-btn" disabled={!preacherVideoUrl} onClick={()=>sendLive(preacherVideoName || "PREACHER",lowerThirdTitle,"Preacher Video")}>Send keyed preacher live</button><button className="secondary-btn" onClick={()=>setLowerThirdEnabled(false)}>Hide graphic</button></div>
+              <div className="button-row"><button className="primary-btn" onClick={()=>setLowerThirdEnabled(true)}>Enable eligible lower thirds</button><button className="secondary-btn" onClick={()=>setLowerThirdEnabled(false)}>Hide lower thirds</button></div>
             </div>
             <div className={"lower-third-preview " + lowerThirdStyle}>
               <div className="lt-preview-screen"><span className="lt-preview-kicker">CHURCH MEDIA STUDIO · LIVE</span><strong>{lowerThirdMode === "automatic" && isLive ? liveSlide.reference : lowerThirdName || "SPEAKER NAME"}</strong><small>{lowerThirdMode === "automatic" && isLive ? liveSlide.text : lowerThirdTitle || "TITLE / SERVICE"}</small></div>
-              <p>Automatic mode follows the live Bible reference, hymn/song title and current live text. Manual mode uses the speaker details above.</p>
+              <p>Lower thirds are hidden on Bible and hymn/song screens. They are shown only for a live preacher or eligible presentation content when enabled.</p>
             </div>
           </div>
-          <div className="notice">Preacher video compositing and chroma-key controls are part of the green-screen integration stage. This panel currently manages live lower-third graphics and content synchronization.</div>
+          <div className="notice">Preacher video comes from OBS Virtual Camera in Live Composition. No recorded video import is required.</div>
         </section>}
 
         {active === "Templates & 3D" && <MotionTemplates selected={selectedMotionTemplate} onSelect={id=>{setSelectedMotionTemplate(id);localStorage.setItem("cms-motion-template-v1",id);}} />}
