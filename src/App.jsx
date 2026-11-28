@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
+import ServicePlanner from "./ServicePlanner.jsx";
+import LiveComposition from "./LiveComposition.jsx";
+import MotionTemplates from "./MotionTemplates.jsx";
 
 const MENU_GROUPS = [
   { label: "WORKSPACE", items: [["Dashboard", "DB"], ["Bible", "BI"], ["Hymns", "HY"], ["Songs", "SO"], ["Presentations", "PR"], ["Service Planner", "SP"]] },
-  { label: "PRODUCTION", items: [["Templates & 3D", "3D"], ["Lower Thirds", "LT"], ["Media Library", "ML"], ["Announcements", "AN"], ["Countdown", "CD"], ["Stage Views", "SV"]] },
+  { label: "PRODUCTION", items: [["Live Composition", "LC"], ["Templates & 3D", "3D"], ["Lower Thirds", "LT"], ["Media Library", "ML"], ["Announcements", "AN"], ["Countdown", "CD"], ["Stage Views", "SV"]] },
   { label: "BROADCAST & SYSTEM", items: [["Recording Studio", "REC"], ["NDI & OBS", "NDI"], ["Updates", "UP"], ["Settings", "SET"]] }
 ];
 
@@ -228,6 +231,11 @@ export default function App() {
   const [lowerThirdTitle, setLowerThirdTitle] = useState("LIVE WORSHIP SERVICE");
   const [lowerThirdStyle, setLowerThirdStyle] = useState("gold");
   const [preacherVideoUrl, setPreacherVideoUrl] = useState("");
+  const liveCameraVideoRef = React.useRef(null);
+  const [cameraVideoVersion, setCameraVideoVersion] = useState(0);
+  const [compositionLayout, setCompositionLayout] = useState("preacher-left-bible-right");
+  const [compositionBible, setCompositionBible] = useState(null);
+  const [selectedMotionTemplate, setSelectedMotionTemplate] = useState(() => localStorage.getItem("cms-motion-template-v1") || "gold-orbit");
   const [preacherVideoName, setPreacherVideoName] = useState("");
   const [chromaKeyEnabled, setChromaKeyEnabled] = useState(true);
   const [chromaThreshold, setChromaThreshold] = useState(65);
@@ -342,16 +350,19 @@ export default function App() {
   }, [settings.backgroundId]);
 
   useEffect(() => {
-    if (!preacherVideoUrl) return;
+    const cameraVideo = liveCameraVideoRef.current;
+    if (!preacherVideoUrl && !cameraVideo) return;
     const canvas = chromaCanvasRef.current;
     const context = canvas?.getContext("2d", { willReadFrequently: true });
     if (!canvas || !context) return;
-    const video = document.createElement("video");
-    video.src = preacherVideoUrl;
-    video.muted = true;
-    video.loop = true;
-    video.autoplay = true;
-    video.playsInline = true;
+    const video = cameraVideo || document.createElement("video");
+    if (preacherVideoUrl && !cameraVideo) {
+      video.src = preacherVideoUrl;
+      video.muted = true;
+      video.loop = true;
+      video.autoplay = true;
+      video.playsInline = true;
+    }
     let frame = 0;
     let active = true;
     const renderKeyedFrame = () => {
@@ -380,16 +391,21 @@ export default function App() {
       }
       frame = requestAnimationFrame(renderKeyedFrame);
     };
-    video.play().then(renderKeyedFrame).catch(() => {});
+    (cameraVideo ? Promise.resolve() : video.play()).then(renderKeyedFrame).catch(() => {});
     return () => {
       active = false;
       cancelAnimationFrame(frame);
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
+      if (!cameraVideo) {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      }
     };
-  }, [preacherVideoUrl, chromaKeyEnabled, chromaThreshold]);
+  }, [preacherVideoUrl, cameraVideoVersion, chromaKeyEnabled, chromaThreshold]);
 
+  useEffect(() => {
+    return () => {
+      if (preacherVideoUrl)
   useEffect(() => {
     return () => {
       if (preacherVideoUrl) URL.revokeObjectURL(preacherVideoUrl);
@@ -410,6 +426,7 @@ export default function App() {
       const liveVideo = liveMediaVideoRef.current;
       const mediaSource = isLive && liveSlide.kind === "Media Video" && liveVideo && liveVideo.readyState >= 2 ? liveVideo : (isLive && liveSlide.kind === "Media" && liveMedia && liveMedia.complete && liveMedia.naturalWidth > 0 ? liveMedia : null);
       const keyedPreacher = isLive && liveSlide.kind === "Preacher Video" ? chromaCanvasRef.current : null;
+      let textCenterX = W / 2, textAlign = "center", textMaxWidth = W - 120, textBottomLimit = H;
       if (keyedPreacher) {
         if (bg && bg.complete && bg.naturalWidth > 0) {
           ctx.drawImage(bg, 0, 0, W, H);
@@ -419,7 +436,21 @@ export default function App() {
           ctx.fillStyle = "#080a10";
           ctx.fillRect(0, 0, W, H);
         }
-        ctx.drawImage(keyedPreacher, 0, 0, W, H);
+        if (compositionLayout === "preacher-left-bible-right") {
+          ctx.drawImage(keyedPreacher, 0, 0, W * 0.58, H);
+          ctx.fillStyle = "rgba(7,10,17,0.92)"; ctx.fillRect(W * 0.58, 0, W * 0.42, H);
+          textCenterX = W * 0.63; textAlign = "left"; textMaxWidth = W * 0.32;
+        } else if (compositionLayout === "bible-left-preacher-right") {
+          ctx.drawImage(keyedPreacher, W * 0.42, 0, W * 0.58, H);
+          ctx.fillStyle = "rgba(7,10,17,0.92)"; ctx.fillRect(0, 0, W * 0.42, H);
+          textCenterX = W * 0.06; textAlign = "left"; textMaxWidth = W * 0.32;
+        } else if (compositionLayout === "preacher-bottom-bible-top") {
+          ctx.drawImage(keyedPreacher, 0, H * 0.42, W, H * 0.58);
+          ctx.fillStyle = "rgba(7,10,17,0.94)"; ctx.fillRect(0, 0, W, H * 0.42);
+          textCenterX = W / 2; textAlign = "center"; textMaxWidth = W - 150; textBottomLimit = H * 0.42;
+        } else {
+          ctx.drawImage(keyedPreacher, 0, 0, W, H);
+        }
       } else if (mediaSource) {
         const sourceW = mediaSource.videoWidth || mediaSource.naturalWidth;
         const sourceH = mediaSource.videoHeight || mediaSource.naturalHeight;
@@ -473,15 +504,15 @@ export default function App() {
       }
       ctx.globalAlpha = animationStyle === "soft-fade" ? eased : Math.min(1, eased * 1.7);
 
-      ctx.textAlign = "center";
+      ctx.textAlign = textAlign;
       ctx.fillStyle = "#d8b76e";
       ctx.font = `600 20px "${settings.fontFamily || "Georgia"}"`;
-      ctx.fillText(isLive && liveSlide.kind !== "Preacher Video" ? (liveSlide.reference || "CHURCH MEDIA STUDIO") : "CHURCH MEDIA STUDIO", W / 2, 95);
+      ctx.fillText(isLive && liveSlide.kind === "Preacher Video" ? (compositionBible?.reference || "LIVE PREACHER") : (isLive ? (liveSlide.reference || "CHURCH MEDIA STUDIO") : "CHURCH MEDIA STUDIO"), textCenterX, keyedPreacher && compositionLayout === "preacher-bottom-bible-top" ? 48 : 95);
       ctx.fillStyle = "#ffffff";
-      const raw = String(isLive && liveSlide.kind === "Preacher Video" ? "" : (isLive ? liveSlide.text : "CHURCH MEDIA STUDIO")).replace(/\r\n?/g, "\n").trim();
+      const raw = String(isLive && liveSlide.kind === "Preacher Video" ? (compositionBible?.text || "Send a Bible verse live before sending the preacher to display scripture here.") : (isLive ? liveSlide.text : "CHURCH MEDIA STUDIO")).replace(/\r\n?/g, "\n").trim();
       const paragraphs = raw.split("\n");
-      const maxWidth = W - 120;
-      const maxHeight = H - 210;
+      const maxWidth = textMaxWidth;
+      const maxHeight = keyedPreacher && compositionLayout === "preacher-bottom-bible-top" ? Math.max(70, textBottomLimit - 90) : (keyedPreacher && compositionLayout !== "preacher-full" ? H - 150 : H - 210);
       let fontSize = Math.max(20, Math.min(64, Number(settings.scriptureFontSize) || 42));
       let lines = [];
       // Preserve hymn stanza line breaks and wrap long lines without clipping.
@@ -508,9 +539,9 @@ export default function App() {
       ctx.font = `600 ${fontSize}px "${settings.fontFamily || "Georgia"}"`;
       const lineHeight = Math.round(fontSize * 1.32);
       const blockHeight = lines.length * lineHeight;
-      const startY = (H - blockHeight) / 2 + lineHeight * 0.78 + 12;
+      const startY = keyedPreacher && compositionLayout === "preacher-bottom-bible-top" ? Math.max(65, (textBottomLimit - blockHeight) / 2 + lineHeight) : (H - blockHeight) / 2 + lineHeight * 0.78 + 12;
       lines.forEach((value, index) => {
-        ctx.fillText(value, W / 2, startY + index * lineHeight, maxWidth);
+        ctx.fillText(value, textCenterX, startY + index * lineHeight, maxWidth);
       });
       ctx.fillStyle = "#a99770";
       ctx.font = `12px "${settings.fontFamily || "Georgia"}"`;
@@ -556,7 +587,7 @@ export default function App() {
     draw();
     const timer = setInterval(draw, 33);
     return () => clearInterval(timer);
-  }, [ndiRunning, liveSlide, isLive, settings.fontFamily, settings.scriptureFontSize, settings.backgroundId, lowerThirdEnabled, lowerThirdMode, lowerThirdName, lowerThirdTitle, lowerThirdStyle, preacherVideoUrl, chromaKeyEnabled, chromaThreshold, transitionToken, animationStyle, animationDuration]);
+  }, [ndiRunning, liveSlide, isLive, compositionBible, compositionLayout, selectedMotionTemplate, settings.fontFamily, settings.scriptureFontSize, settings.backgroundId, lowerThirdEnabled, lowerThirdMode, lowerThirdName, lowerThirdTitle, lowerThirdStyle, preacherVideoUrl, cameraVideoVersion, chromaKeyEnabled, chromaThreshold, transitionToken, animationStyle, animationDuration]);
 
   useEffect(() => {
     localStorage.setItem("cms-settings-v1", JSON.stringify(settings));
@@ -658,6 +689,7 @@ export default function App() {
   }, [selectedSong, selectedSongId]);
 
   function sendLive(text, reference, kind, mediaUrl = null) {
+    if (kind === "Bible") setCompositionBible({ text, reference });
     setLiveSlide({ text, reference, kind, mediaUrl });
     setTransitionToken(value => value + 1);
     setIsLive(true);
@@ -1094,18 +1126,9 @@ export default function App() {
           <div className="notice">Preacher video compositing and chroma-key controls are part of the green-screen integration stage. This panel currently manages live lower-third graphics and content synchronization.</div>
         </section>}
 
-        {active === "Templates & 3D" && <section className="content-panel production-panel">
-          <div className="panel-heading"><div><h2>Motion Templates & 3D Effects</h2><p>Choose a motion treatment for live scripture, worship lyrics, countdowns and slides.</p></div><span className="small-label">MOTION GRAPHICS</span></div>
-          <div className="template-showcase"><div className="template-orb"><div className="orb-core">✦</div><i></i><b></b></div><div><span className="small-label">LIVE PREVIEW STYLE</span><h3>Premium cinematic 3D</h3><p>Layered depth, perspective rotation, gold light trails and a smooth reveal.</p></div></div>
-          <div className="production-grid">
-            <label>Transition style<select value={animationStyle} onChange={e=>setAnimationStyle(e.target.value)}><option value="cinematic-3d">Cinematic 3D reveal</option><option value="flip-3d">3D page flip</option><option value="zoom-depth">Depth zoom</option><option value="gold-sweep">Gold light sweep</option><option value="soft-fade">Soft fade</option></select></label>
-            <label>Transition duration<select value={animationDuration} onChange={e=>setAnimationDuration(Number(e.target.value))}><option value="500">Fast · 0.5 seconds</option><option value="900">Standard · 0.9 seconds</option><option value="1400">Cinematic · 1.4 seconds</option><option value="2000">Slow · 2 seconds</option></select></label>
-            <div className="settings-section"><h3>Animation coverage</h3><p>Bible · Hymns · Songs · Presentations · Countdown · Announcements · Lower thirds</p><button className="primary-btn" onClick={()=>setTransitionToken(value=>value+1)}>Preview animation</button></div>
-          </div>
-          <div className="notice">Motion effects are applied to the Program monitor. The NDI-rendered output receives the live content frame; animated NDI overlays will be expanded with the video compositor.</div>
-        </section>}
+        {active === "Templates & 3D" && <MotionTemplates selected={selectedMotionTemplate} onSelect={id=>{setSelectedMotionTemplate(id);localStorage.setItem("cms-motion-template-v1",id);}} />}
 
-        {active === "Service Planner" && <section className="content-panel production-panel"><div className="panel-heading"><div><h2>Service Planner</h2><p>Plan a service sequence and prepare its content.</p></div><span className="small-label">SERVICE WORKSPACE</span></div><div className="empty-state"><h3>Service planning workspace</h3><p>Use Presentations, Bible, Hymns and Announcements to prepare the current service. A saved run-of-show editor is scheduled for the next service-planner phase.</p></div></section>}
+        {active === "Service Planner" && <ServicePlanner onSendLive={sendLive} />}
         {active === "Stage Views" && <section className="content-panel production-panel"><div className="panel-heading"><div><h2>Stage Views</h2><p>Operator-facing information for the platform display.</p></div><span className="small-label">STAGE OUTPUT</span></div><div className="empty-state"><h3>Stage display workspace</h3><p>Stage-specific display routing and presenter notes are scheduled for the stage-output integration phase.</p></div></section>}
         {active === "Recording Studio" && <section className="content-panel production-panel"><div className="panel-heading"><div><h2>Recording Studio</h2><p>Recording controls and session management.</p></div><span className="small-label">RECORDING</span></div><div className="empty-state"><h3>Recording integration</h3><p>The complete capture and recording engine is not yet present in this source version. Recording controls will be added with the audio/video pipeline.</p></div></section>}
 
@@ -1188,10 +1211,11 @@ export default function App() {
           <p className="notice">This sender transmits the Program text and status as a 960 × 540 video stream at approximately 10 frames per second. Audio and full-resolution media playback are not included in this first NDI stage. Both computers must be on the same network. Windows Firewall may ask you to allow network access.</p>
         </section>}
 
+        <LiveComposition active={active === "Live Composition"} onVideoReady={video=>{liveCameraVideoRef.current=video;setCameraVideoVersion(v=>v+1);}} onVideoStopped={()=>{liveCameraVideoRef.current=null;setCameraVideoVersion(v=>v+1);}} onLayoutChange={setCompositionLayout} onSendPreacher={()=>sendLive("LIVE PREACHER","OBS VIRTUAL CAMERA","Preacher Video")} />
         <canvas ref={ndiCanvasRef} width="960" height="540" className="ndi-hidden-canvas" aria-hidden="true" />
 
-        {settings.showOutput && <section className="output-area"><div className="output-header"><div><h3>Presentation output</h3><p>Local program monitor · NDI network output available</p></div><span className={`live-indicator ${isLive?"on":""}`}>{isLive?"● LIVE":"○ STANDBY"}</span></div><div className="screen-grid"><div><div className="screen-label">PREVIEW</div><div className="monitor" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><span style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`}}>{active==="Bible"?currentText:active==="Hymns"||active==="Songs"?currentStanza:"Your selected slide will appear here"}</span><small>{active==="Bible"?activeVerseRef: (selectedSong?.number ? "Hymn " + selectedSong.number + " · " : "") + (selectedSong?.title || "CHURCH MEDIA STUDIO")}</small></div></div><div><div className="screen-label">PROGRAM / LIVE</div><div className="monitor program" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><canvas ref={chromaCanvasRef} width="960" height="540" className="preacher-key-canvas" style={{display:isLive && liveSlide.kind === "Preacher Video" ? "block" : "none"}}/><span key={transitionToken} className={"program-content motion-" + animationStyle} style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`,animationDuration:animationDuration + "ms",display:isLive && liveSlide.kind === "Preacher Video" ? "none" : "block"}}>{isLive?liveSlide.text:"No live slide"}</span><small>{isLive?liveSlide.reference:"WAITING FOR OUTPUT"}</small>{isLive && lowerThirdEnabled && <div className={"program-lower-third lt-" + lowerThirdStyle}><strong>{lowerThirdMode === "automatic" ? (liveSlide.kind === "Preacher Video" ? liveSlide.text : liveSlide.reference) : lowerThirdName}</strong><span>{lowerThirdMode === "automatic" ? (liveSlide.kind === "Preacher Video" ? liveSlide.reference : liveSlide.text) : lowerThirdTitle}</span></div>}</div></div></div><div className="output-actions"><button className="secondary-btn" onClick={()=>setIsLive(false)}>Clear live screen</button><span>{isLive?liveSlide.kind+" is on the local program monitor":"Ready for presentation"}</span></div></section>}
-      <footer>CHURCH MEDIA STUDIO <span>•</span> PROFESSIONAL EDITION <span>•</span> VERSION 1.4.0 <span>•</span> {CREATOR_CREDIT}</footer>
+        {settings.showOutput && <section className="output-area"><div className="output-header"><div><h3>Presentation output</h3><p>Local program monitor · NDI network output available</p></div><span className={`live-indicator ${isLive?"on":""}`}>{isLive?"● LIVE":"○ STANDBY"}</span></div><div className="screen-grid"><div><div className="screen-label">PREVIEW</div><div className="monitor" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><span style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`}}>{active==="Bible"?currentText:active==="Hymns"||active==="Songs"?currentStanza:"Your selected slide will appear here"}</span><small>{active==="Bible"?activeVerseRef: (selectedSong?.number ? "Hymn " + selectedSong.number + " · " : "") + (selectedSong?.title || "CHURCH MEDIA STUDIO")}</small></div></div><div><div className="screen-label">PROGRAM / LIVE</div><div className="monitor program" style={{backgroundImage:`linear-gradient(rgba(4,6,11,.55),rgba(4,6,11,.65)),url(./backgrounds/${(BIBLE_BACKGROUNDS.find(item=>item.id===(settings.backgroundId||"bg-01"))||BIBLE_BACKGROUNDS[0]).file})`,backgroundSize:"cover",backgroundPosition:"center"}}><canvas ref={chromaCanvasRef} width="960" height="540" className="preacher-key-canvas" style={{display:isLive && liveSlide.kind === "Preacher Video" ? "block" : "none"}}/><span key={transitionToken} className={"program-content motion-" + animationStyle} style={{fontFamily:settings.fontFamily||"Georgia",fontSize:`${Math.max(12,(settings.scriptureFontSize||42)*0.34)}px`,animationDuration:animationDuration + "ms",display:isLive && liveSlide.kind === "Preacher Video" ? "none" : "block"}}>{isLive?liveSlide.text:"No live slide"}</span><small>{isLive?liveSlide.reference:"WAITING FOR OUTPUT"}</small>{isLive && lowerThirdEnabled && !["Bible","Song","Hymn"].includes(liveSlide.kind) && <div className={"program-lower-third lt-" + lowerThirdStyle}><strong>{lowerThirdMode === "automatic" ? (liveSlide.kind === "Preacher Video" ? liveSlide.text : liveSlide.reference) : lowerThirdName}</strong><span>{lowerThirdMode === "automatic" ? (liveSlide.kind === "Preacher Video" ? liveSlide.reference : liveSlide.text) : lowerThirdTitle}</span></div>}</div></div></div><div className="output-actions"><button className="secondary-btn" onClick={()=>setIsLive(false)}>Clear live screen</button><span>{isLive?liveSlide.kind+" is on the local program monitor":"Ready for presentation"}</span></div></section>}
+      <footer>CHURCH MEDIA STUDIO <span>•</span> PROFESSIONAL EDITION <span>•</span> VERSION 1.5.0 <span>•</span> {CREATOR_CREDIT}</footer>
       </main>
     </div>
   );
