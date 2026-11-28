@@ -1,6 +1,6 @@
 {
   "name": "church-media-studio",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "Church Media Studio — professional church presentation, motion graphics and broadcast workspace",
   "main": "electron/main.cjs",
