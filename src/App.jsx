@@ -408,9 +408,6 @@ export default function App() {
 
   useEffect(() => {
     return () => {
-      if (preacherVideoUrl)
-  useEffect(() => {
-    return () => {
       if (preacherVideoUrl) URL.revokeObjectURL(preacherVideoUrl);
     };
   }, [preacherVideoUrl]);
