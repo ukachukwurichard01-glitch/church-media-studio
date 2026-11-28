@@ -300,3 +300,12 @@ footer{color:#596273;font-size:8px;letter-spacing:1.3px;text-align:center;paddin
 .motion-bg-diamond-depth{background:linear-gradient(145deg,#4a6278,#182b42 48%,#060b12)!important}
 @media(max-width:1050px){.layout-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.obs-workflow{grid-template-columns:1fr}.planner-add{grid-template-columns:1fr 1fr}.motion-template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.planner-meta{grid-template-columns:1fr}.planner-item{align-items:flex-start;flex-wrap:wrap}.planner-item .slide-actions{width:100%;justify-content:flex-start}.motion-template-grid{grid-template-columns:1fr 1fr}}
+
+
+.program-bible-side{position:absolute;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:7px;background:rgba(7,10,17,.94);color:#fff;overflow:hidden;text-align:left;pointer-events:none}
+.program-bible-side small{font:700 7px Manrope;color:#d8b76e;letter-spacing:.5px}
+.program-bible-side span{font:600 9px/1.45 Georgia,serif;color:#fff;white-space:pre-wrap;overflow:hidden}
+.program-bible-side.preacher-left-bible-right{right:0;top:0;width:42%;height:100%}
+.program-bible-side.bible-left-preacher-right{left:0;top:0;width:42%;height:100%}
+.program-bible-side.preacher-bottom-bible-top{left:0;top:0;width:100%;height:42%;text-align:center;align-items:center;padding:5px 12px}
+.program-bible-side.preacher-bottom-bible-top span{max-width:95%}
