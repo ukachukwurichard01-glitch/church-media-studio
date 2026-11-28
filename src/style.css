@@ -161,3 +161,51 @@ footer{color:#596273;font-size:8px;letter-spacing:1.3px;text-align:center;paddin
 .slide-actions .secondary-btn{margin-top:0;padding:8px 10px}
 .slide-form .button-row,.announcement-form .button-row{margin-top:2px}
 @media(max-width:900px){.hymn-jump select{max-width:none;min-width:100%}.section-jump{width:100%;justify-content:center}}
+
+
+/* Church Media Studio 1.4.0 — motion graphics and lower thirds */
+.production-panel{animation:cmsPanelIn .45s ease both}
+.production-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.production-grid label{display:grid;gap:8px;color:#bfc6d2;font-size:11px}
+.production-grid .settings-section{border:1px solid #303746;border-radius:9px;padding:16px;background:#0d111a}
+.lower-third-preview{padding:14px;border:1px solid #343b49;border-radius:10px;background:radial-gradient(ellipse at 75% 20%,#36302a,#0b0e16 65%)}
+.lt-preview-screen{min-height:190px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:18px;position:relative;overflow:hidden;border-radius:7px;background:linear-gradient(135deg,#111827,#090b11)}
+.lt-preview-screen:after{content:"";position:absolute;left:0;bottom:0;width:100%;height:4px;background:#d8b76e;box-shadow:0 0 25px #d8b76e88}
+.lt-preview-screen strong{font:800 20px Manrope;color:#fff;z-index:1}
+.lt-preview-screen small{font-size:12px;color:#d8c18b;margin-top:7px;z-index:1}
+.lt-preview-kicker{font-size:8px;letter-spacing:2px;color:#d8b76e;margin-bottom:auto}
+.lower-third-preview.white .lt-preview-screen:after,.lt-white{background:#fff}
+.lower-third-preview.blue .lt-preview-screen:after,.lt-blue{background:#4ba5e8}
+.lower-third-preview p{font-size:10px;line-height:1.6;color:#8e98a8}
+.program-lower-third{position:absolute;left:5%;right:5%;bottom:8%;z-index:3;display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:8px 13px 9px 16px;background:linear-gradient(90deg,rgba(5,7,12,.92),rgba(5,7,12,.68),transparent);border-left:3px solid #d8b76e;box-shadow:0 8px 25px #0007;animation:cmsLowerThirdIn .65s cubic-bezier(.2,.8,.2,1) both;pointer-events:none}
+.program-lower-third strong{font:800 11px Manrope;color:#fff;letter-spacing:.7px}
+.program-lower-third span{font:500 9px Manrope;color:#e3d3ad;margin-top:3px;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lt-white{border-color:#fff}.lt-white strong{color:#fff}.lt-white span{color:#fff}
+.lt-blue{border-color:#4ba5e8}.lt-blue span{color:#a9d9ff}
+.monitor.program{position:relative;perspective:1000px;isolation:isolate}
+.program-content{display:block;position:relative;z-index:1;transform-style:preserve-3d;backface-visibility:hidden;text-shadow:0 5px 24px #000b}
+.motion-cinematic-3d{animation:cmsCinematic3D .9s cubic-bezier(.16,.78,.2,1) both}
+.motion-flip-3d{animation:cmsFlip3D .9s cubic-bezier(.2,.8,.2,1) both}
+.motion-zoom-depth{animation:cmsZoomDepth .9s cubic-bezier(.16,.78,.2,1) both}
+.motion-gold-sweep{animation:cmsGoldSweep .9s ease both}
+.motion-soft-fade{animation:cmsSoftFade .9s ease both}
+@keyframes cmsPanelIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cmsCinematic3D{0%{opacity:0;transform:perspective(900px) rotateX(24deg) rotateY(-13deg) translateY(30px) scale(.88);filter:blur(8px)}65%{opacity:1;transform:perspective(900px) rotateX(-3deg) rotateY(2deg) translateY(-3px) scale(1.025);filter:blur(0)}100%{opacity:1;transform:perspective(900px) rotateX(0) rotateY(0) translateY(0) scale(1)}}
+@keyframes cmsFlip3D{0%{opacity:0;transform:perspective(900px) rotateY(-85deg) scale(.85)}75%{opacity:1;transform:perspective(900px) rotateY(8deg) scale(1.02)}100%{transform:perspective(900px) rotateY(0) scale(1)}}
+@keyframes cmsZoomDepth{0%{opacity:0;transform:perspective(900px) translateZ(-260px) scale(.55);filter:blur(10px)}100%{opacity:1;transform:perspective(900px) translateZ(0) scale(1);filter:blur(0)}}
+@keyframes cmsGoldSweep{0%{opacity:0;transform:translateX(-45px) skewX(-12deg);filter:brightness(2)}100%{opacity:1;transform:translateX(0) skewX(0);filter:brightness(1)}}
+@keyframes cmsSoftFade{from{opacity:0;filter:blur(5px)}to{opacity:1;filter:blur(0)}}
+@keyframes cmsLowerThirdIn{0%{opacity:0;transform:perspective(700px) rotateX(65deg) translateY(22px);transform-origin:bottom}100%{opacity:1;transform:perspective(700px) rotateX(0) translateY(0)}}
+.template-showcase{display:flex;align-items:center;gap:26px;padding:22px;border:1px solid #383342;border-radius:12px;background:radial-gradient(ellipse at 25% 50%,#4b3922 0,#171722 45%,#0c1018 100%);margin-bottom:18px;min-height:210px;overflow:hidden}
+.template-showcase h3{font-size:19px;margin:8px 0}.template-showcase p{color:#aab2c0;font-size:11px;max-width:400px;line-height:1.7}
+.template-orb{width:150px;height:150px;position:relative;flex:0 0 150px;display:grid;place-items:center;perspective:700px;transform-style:preserve-3d;animation:cmsOrbFloat 5s ease-in-out infinite}
+.template-orb:before,.template-orb:after,.template-orb i,.template-orb b{content:"";position:absolute;border:1px solid #d8b76e;border-radius:50%;box-shadow:0 0 22px #d8b76e66,inset 0 0 18px #d8b76e33}
+.template-orb:before{width:112px;height:112px;transform:rotateX(68deg) rotateZ(20deg)}
+.template-orb:after{width:112px;height:112px;transform:rotateY(68deg) rotateZ(-25deg)}
+.template-orb i{width:132px;height:58px;transform:rotateX(70deg);animation:cmsOrbitSpin 6s linear infinite}
+.template-orb b{width:72px;height:72px;border-color:#fff2c1;box-shadow:0 0 40px #e7c878aa}
+.orb-core{font-size:35px;color:#fff0b9;text-shadow:0 0 20px #e7c878;z-index:2;animation:cmsCorePulse 3s ease-in-out infinite}
+@keyframes cmsOrbFloat{0%,100%{transform:translateY(0) rotateX(-7deg)}50%{transform:translateY(-9px) rotateX(7deg)}}
+@keyframes cmsOrbitSpin{to{transform:rotateX(70deg) rotateZ(360deg)}}
+@keyframes cmsCorePulse{0%,100%{transform:scale(.9);opacity:.8}50%{transform:scale(1.12);opacity:1}}
+@media(max-width:1050px){.production-grid{grid-template-columns:1fr}.template-showcase{align-items:flex-start;flex-direction:column}.sidebar{width:220px}.nav-item{font-size:12px;padding:10px}}
